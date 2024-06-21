@@ -1,0 +1,4 @@
+name: LiberalisPlugin
+version: '${version}'
+main: com.soupgroup.liberalis.liberalisplugin.LiberalisPlugin
+api-version: '1.20'

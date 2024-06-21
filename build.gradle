@@ -1,0 +1,75 @@
+plugins {
+    id 'java'
+    // Adding the direct IDE Minecraft debugging plugin
+    id "xyz.jpenilla.run-paper" version "2.2.0"
+    // Plugin for jar bundling
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.soupgroup.liberalis'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/groups/public/"
+    }
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+
+        // As of Gradle 5.1, you can limit this to only those
+        // dependencies you expect from it
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
+    }
+}
+
+dependencies {
+    compileOnly "io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT"
+    implementation "com.zaxxer:HikariCP:4.0.3"
+}
+
+def targetJavaVersion = 21
+java {
+//    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+//    sourceCompatibility = javaVersion
+//    targetCompatibility = javaVersion
+//    if (JavaVersion.current() < javaVersion) {
+//        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+//    }
+    sourceCompatibility = targetJavaVersion
+    targetCompatibility = targetJavaVersion
+    toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+}
+tasks {
+    runServer {
+        // Configure the Minecraft version for our task.
+        // This is the only required configuration besides applying the plugin.
+        // Your plugin's jar (or shadowJar if present) will be used automatically.
+        minecraftVersion "1.20.6"
+    }
+
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('paper-plugin.yml') {
+        expand props
+    }
+}
